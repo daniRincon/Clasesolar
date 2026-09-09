@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Del sol a la energía · Taller EcoFlow</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root{
+        --sky:#122340;
+        --sky-deep:#0b1728;
+        --parchment:#FBF5E9;
+        --parchment-deep:#F3E9D6;
+        --sun:#F4A93B;
+        --ember:#DD6A2C;
+        --leaf:#3B7A57;
+        --leaf-deep:#2B5B41;
+        --clay:#B33F32;
+        --panel-blue:#2F5D8A;
+        --ink:#20261E;
+        --ink-soft:#5B6455;
+    }
+    body{
+        font-family:'Public Sans', system-ui, sans-serif;
+        background:var(--parchment);
+        color:var(--ink);
+    }
+    .font-display{ font-family:'Fraunces', Georgia, serif; }
+
+    .field-texture{
+        background-image:
+            radial-gradient(circle at 12% -10%, rgba(244,169,59,0.22), transparent 45%),
+            radial-gradient(circle at 100% 0%, rgba(47,93,138,0.10), transparent 40%);
+    }
+
+    /* ---- slides ---- */
+    .slide{ display:none; margin:auto; }
+    .slide.active{ display:block; animation:riseIn .35s ease-out; }
+    @keyframes riseIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+    .reveal-content{ display:none; }
+    .reveal-content.show{ display:block; animation:riseIn .3s ease-out; }
+
+    /* ---- lista arrastrable (Actividad 1) ---- */
+    .orden-item{
+        display:flex; align-items:center; gap:.6rem;
+        background:#FBF5E9; border:1px solid #E8DFC9; border-radius:10px;
+        padding:.55rem .8rem; margin-bottom:.4rem;
+        position:relative; user-select:none; touch-action:pan-y;
+        transition: background-color .2s ease, border-color .2s ease;
+    }
+    .orden-item.dragging{
+        z-index:50; background:#fff; box-shadow:0 16px 30px -14px rgba(18,35,64,.45);
+        transition:none;
+    }
+    .orden-item.correct{ background:#E3EFE7; border-color:#BFDCC9; }
+    .orden-item.incorrect{ background:#FBE3DD; border-color:#F0C0B0; }
+    .orden-num{
+        width:23px; height:23px; border-radius:999px; background:var(--sky); color:#fff;
+        display:flex; align-items:center; justify-content:center;
+        font-weight:700; font-size:.75rem; flex:none;
+    }
+    .orden-icon{ font-size:1.1rem; width:1.4rem; text-align:center; flex:none; }
+    .orden-text{ flex:1; font-weight:600; font-size:.92rem; }
+    .drag-handle{
+        cursor:grab; color:#B7AD8E; padding:.4rem; touch-action:none; flex:none;
+    }
+    .orden-item.dragging .drag-handle{ cursor:grabbing; }
+    .orden-buttons{ display:flex; flex-direction:column; gap:2px; flex:none; }
+    .orden-buttons button{
+        width:22px; height:18px; border-radius:5px; background:#F0E9D6; color:var(--ink-soft);
+        display:flex; align-items:center; justify-content:center; font-size:.6rem;
+    }
+    .orden-buttons button:hover{ background:#E7DEC2; }
+
+    /* página tipo "cuaderno de campo": esquina dispareja, no todo redondeado igual */
+    .page{
+        background:#fff;
+        border-radius: 22px 8px 22px 8px;
+        border:1px solid #E8DFC9;
+        box-shadow: 0 1px 0 #fff inset, 0 14px 30px -20px rgba(18,35,64,0.35);
+    }
+
+    .eyebrow{
+        display:inline-flex; align-items:center; gap:.5rem;
+        font-weight:700; font-size:.78rem; color:var(--ember);
+    }
+    .eyebrow::before{
+        content:""; width:7px; height:7px; border-radius:999px; background:var(--ember); flex:none;
+    }
+
+    .card-hover{ transition: transform .2s ease, box-shadow .2s ease; }
+    .card-hover:hover{ transform: translateY(-3px); box-shadow: 0 10px 18px -12px rgba(18,35,64,.35); }
+    .card-hover:focus-visible{ outline: 3px solid var(--sun); outline-offset:2px; }
+
+    /* ---- botones ---- */
+    .btn{
+        display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+        font-weight:700; border-radius:9px; padding:.6rem 1.3rem; font-size:.92rem;
+        border-bottom:3px solid rgba(0,0,0,.18);
+        transition: transform .12s ease, border-bottom-width .12s ease;
+    }
+    .btn:active{ transform: translateY(2px); border-bottom-width:1px; }
+    .btn:focus-visible{ outline: 3px solid var(--sun); outline-offset:2px; }
+    .btn-primary{ background:var(--ember); color:#fff; }
+    .btn-primary:hover{ background:#c85d24; }
+    .btn-dark{ background:var(--sky); color:#fff; }
+    .btn-dark:hover{ background:var(--sky-deep); }
+    .btn-outline{ background:#fff; color:var(--ink); border:2px solid #E1D6BC; border-bottom-width:4px; }
+    .btn-outline:hover{ background:#FBF5E9; }
+    .btn-ghost{ background:#F4EEDD; color:var(--ink); }
+    .btn-danger{ background:#FBE3DD; color:var(--clay); }
+    .btn-danger:hover{ background:#F6D0C6; }
+    .btn-safe{ background:#DCEDE1; color:var(--leaf-deep); }
+    .btn-safe:hover{ background:#C9E3D1; }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+
+    footer .btn[disabled]{ opacity:.35; }
+
+    @media (prefers-reduced-motion: reduce){
+        .slide.active, .reveal-content.show { animation:none; }
+        .card-hover{ transition:none; }
+    }
+</style>
+</head>
+<body class="h-screen overflow-hidden flex flex-col field-texture">
+
+<!-- ===== Encabezado: arco del día como indicador de avance ===== -->
+<header class="p-2 sm:p-3 z-10" style="background:var(--sky); color:#fff;">
+    <div class="max-w-6xl mx-auto flex items-center gap-2 sm:gap-5">
+        <div class="flex items-center gap-2 shrink-0">
+            <i class="fas fa-solar-panel text-xl" style="color:var(--sun);"></i>
+            <h1 class="font-display font-semibold text-base hidden sm:block tracking-tight">Del sol a la energía</h1>
+        </div>
+
+        <div class="flex-1 min-w-0">
+            <svg id="arc-svg" viewBox="0 0 340 46" class="w-full h-6 sm:h-7 block" preserveAspectRatio="none" aria-hidden="true">
+                <path id="arc-track" d="M8,40 Q170,-6 332,40" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="3" stroke-linecap="round"/>
+                <path id="arc-fill" d="M8,40 Q170,-6 332,40" fill="none" stroke="url(#arcGrad)" stroke-width="3" stroke-linecap="round"/>
+                <defs>
+                    <linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0" stop-color="#F4A93B"/>
+                        <stop offset="1" stop-color="#DD6A2C"/>
+                    </linearGradient>
+                </defs>
+                <circle id="arc-sun" r="6.5" fill="#F4A93B" stroke="#0b1728" stroke-width="1.5"/>
+            </svg>
+        </div>
+
+        <div class="text-xs sm:text-sm font-semibold shrink min-w-0 text-right leading-tight truncate" style="color:#D9E2EE;">
+            <span id="current-step">1</span> de <span id="total-steps">11</span>
+            <span class="hidden sm:block text-[10px] font-normal truncate" style="color:#93A2BC;" id="step-label">Bienvenida</span>
+        </div>
+    </div>
+</header>
+
+<!-- ===== Contenido ===== -->
+<main class="flex-grow overflow-y-auto p-3 sm:p-5 flex flex-col relative">
+
+    <!-- Slide 0: Portada -->
+    <div id="slide-0" class="slide active w-full max-w-3xl text-center" data-label="Bienvenida">
+        <div class="w-20 h-20 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 flex items-center justify-center" style="background:radial-gradient(circle, #FDE9C6, #F4A93B);">
+            <i class="fas fa-sun text-4xl sm:text-5xl" style="color:#B85A1E;"></i>
+        </div>
+        <h2 class="font-display font-semibold text-2xl sm:text-4xl mb-3" style="color:var(--sky);">Del sol a la energía eléctrica</h2>
+        <p class="text-base sm:text-lg mb-5" style="color:var(--ink-soft);">Componentes, instalación y uso seguro de un sistema solar EcoFlow.</p>
+        <div class="flex flex-wrap justify-center gap-2 mb-6">
+            <span class="bg-white px-3 py-1.5 rounded-lg border border-[#E8DFC9] font-semibold text-sm"><i class="fas fa-clock mr-2" style="color:var(--panel-blue);"></i>2 horas</span>
+            <span class="bg-white px-3 py-1.5 rounded-lg border border-[#E8DFC9] font-semibold text-sm"><i class="fas fa-hands-helping mr-2" style="color:var(--leaf);"></i>Se aprende haciendo</span>
+        </div>
+        <button onclick="nextSlide()" class="btn btn-primary text-base">
+            Comenzar el taller <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <!-- Slide 1: Rompehielo -->
+    <div id="slide-1" class="slide w-full max-w-5xl" data-label="Rompehielo">
+        <div class="page p-4 sm:p-6">
+            <span class="eyebrow">Rompehielo</span>
+            <h2 class="font-display font-semibold text-xl sm:text-2xl mt-2 mb-3" style="color:var(--sky);">¿De dónde viene nuestra energía?</h2>
+            <p class="text-base sm:text-lg mb-4 text-center" style="color:var(--ink-soft);">¿Qué cosas usamos a diario que necesitan electricidad?</p>
+
+            <div class="grid grid-cols-4 gap-2 sm:gap-3 mb-4 max-w-lg mx-auto">
+                <div class="card-hover text-center bg-[#FBF5E9] border border-[#E8DFC9] p-3 rounded-xl text-2xl" style="color:var(--panel-blue);"><i class="fas fa-mobile-alt"></i></div>
+                <div class="card-hover text-center bg-[#FBF5E9] border border-[#E8DFC9] p-3 rounded-xl text-2xl" style="color:var(--panel-blue);"><i class="fas fa-tv"></i></div>
+                <div class="card-hover text-center bg-[#FBF5E9] border border-[#E8DFC9] p-3 rounded-xl text-2xl" style="color:var(--panel-blue);"><i class="fas fa-laptop"></i></div>
+                <div class="card-hover text-center bg-[#FBF5E9] border border-[#E8DFC9] p-3 rounded-xl text-2xl" style="color:var(--panel-blue);"><i class="fas fa-lightbulb"></i></div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="toggleReveal('reveal-ruta', this)" class="btn btn-dark">
+                    <span>Mostrar la ruta de la energía solar</span> <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+
+            <div id="reveal-ruta" class="reveal-content mt-4 p-4 rounded-xl" style="background:#FBF5E9; border:1px solid #EFDDBB;">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-center font-bold text-sm sm:text-base" style="color:var(--sky);">
+                    <div><i class="fas fa-sun text-2xl block mb-1" style="color:var(--sun);"></i>Sol</div>
+                    <i class="fas fa-arrow-right hidden sm:block" style="color:#C9BC96;"></i>
+                    <i class="fas fa-arrow-down sm:hidden" style="color:#C9BC96;"></i>
+                    <div><i class="fas fa-solar-panel text-2xl block mb-1" style="color:var(--panel-blue);"></i>Energía</div>
+                    <i class="fas fa-arrow-right hidden sm:block" style="color:#C9BC96;"></i>
+                    <i class="fas fa-arrow-down sm:hidden" style="color:#C9BC96;"></i>
+                    <div><i class="fas fa-car-battery text-2xl block mb-1" style="color:var(--leaf);"></i>Almacenaje</div>
+                    <i class="fas fa-arrow-right hidden sm:block" style="color:#C9BC96;"></i>
+                    <i class="fas fa-arrow-down sm:hidden" style="color:#C9BC96;"></i>
+                    <div><i class="fas fa-plug text-2xl block mb-1" style="color:var(--ember);"></i>Equipos</div>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 rounded-xl border-l-4" style="background:#EAF1F8; border-color:var(--panel-blue);">
+                <p class="font-bold mb-0.5 text-sm" style="color:var(--panel-blue);"><i class="fas fa-comments mr-2"></i>Para conversar en grupo</p>
+                <p class="text-sm" style="color:#2A4A63;">Si mañana la comunidad se queda sin servicio eléctrico durante 24 horas, ¿qué equipos serían prioritarios?</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2: El sol -->
+    <div id="slide-2" class="slide w-full max-w-5xl" data-label="Actividad 1">
+        <div class="page p-4 sm:p-6">
+            <span class="eyebrow">Actividad 1</span>
+            <h2 class="font-display font-semibold text-xl sm:text-2xl mt-2 mb-2" style="color:var(--sky);">¿Qué tan fuerte llega el sol?</h2>
+            <p class="text-sm sm:text-base mb-3" style="color:var(--ink-soft);">Arrastren las tarjetas (o usen las flechas) para ordenarlas de mayor a menor generación de energía.</p>
+
+            <ul id="orden-lista" class="mb-3 list-none p-0" aria-label="Lista ordenable: arrastren el ícono de agarre o usen las flechas">
+                <li class="orden-item" data-correct="2">
+                    <span class="orden-num">1</span>
+                    <i class="fas fa-cloud orden-icon" style="color:#8B93A0;"></i>
+                    <span class="orden-text">Con nubosidad</span>
+                    <i class="fas fa-grip-lines drag-handle" onpointerdown="startDrag(event)" aria-hidden="true"></i>
+                    <span class="orden-buttons">
+                        <button type="button" aria-label="Subir" onclick="moveItem(this,-1)"><i class="fas fa-chevron-up"></i></button>
+                        <button type="button" aria-label="Bajar" onclick="moveItem(this,1)"><i class="fas fa-chevron-down"></i></button>
+                    </span>
+                </li>
+                <li class="orden-item" data-correct="4">
+                    <span class="orden-num">2</span>
+                    <i class="fas fa-cloud-showers-heavy orden-icon" style="color:var(--panel-blue);"></i>
+                    <span class="orden-text">Bajo lluvia</span>
+                    <i class="fas fa-grip-lines drag-handle" onpointerdown="startDrag(event)" aria-hidden="true"></i>
+                    <span class="orden-buttons">
+                        <button type="button" aria-label="Subir" onclick="moveItem(this,-1)"><i class="fas fa-chevron-up"></i></button>
+                        <button type="button" aria-label="Bajar" onclick="moveItem(this,1)"><i class="fas fa-chevron-down"></i></button>
+                    </span>
+                </li>
+                <li class="orden-item" data-correct="1">
+                    <span class="orden-num">3</span>
+                    <i class="fas fa-sun orden-icon" style="color:var(--sun);"></i>
+                    <span class="orden-text">Bajo el sol directo</span>
+                    <i class="fas fa-grip-lines drag-handle" onpointerdown="startDrag(event)" aria-hidden="true"></i>
+                    <span class="orden-buttons">
+                        <button type="button" aria-label="Subir" onclick="moveItem(this,-1)"><i class="fas fa-chevron-up"></i></button>
+                        <button type="button" aria-label="Bajar" onclick="moveItem(this,1)"><i class="fas fa-chevron-down"></i></button>
+                    </span>
+                </li>
+                <li class="orden-item" data-correct="3">
+                    <span class="orden-num">4</span>
+                    <i class="fas fa-tree orden-icon" style="color:var(--leaf);"></i>
+                    <span class="orden-text">Bajo la sombra de un árbol</span>
+                    <i class="fas fa-grip-lines drag-handle" onpointerdown="startDrag(event)" aria-hidden="true"></i>
+                    <span class="orden-buttons">
+                        <button type="button" aria-label="Subir" onclick="moveItem(this,-1)"><i class="fas fa-chevron-up"></i></button>
+                        <button type="button" aria-label="Bajar" onclick="moveItem(this,1)"><i class="fas fa-chevron-down"></i></button>
+                    </span>
+                </li>
+            </ul>
+
+            <div class="text-center mb-3">
+                <button onclick="verificarOrden()" class="btn btn-primary">Verificar orden</button>
+                <p id="orden-feedback" class="mt-2 font-bold text-sm hidden" aria-live="polite"></p>
+            </div>
+
+            <div class="text-center mb-3">
+                <button onclick="toggleReveal('reveal-factores', this)" class="btn btn-outline">
+                    ¿De qué depende la producción del panel?
+                </button>
+                <div id="reveal-factores" class="reveal-content mt-3 p-3 rounded-lg text-left" style="background:#FBF5E9; border:1px solid #EFDDBB;">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <div><i class="fas fa-sun mr-1" style="color:var(--sun);"></i><strong>Radiación</strong><br><span style="color:var(--ink-soft);">A mayor radiación, más energía.</span></div>
+                        <div><i class="fas fa-clock mr-1" style="color:var(--panel-blue);"></i><strong>Hora del día</strong><br><span style="color:var(--ink-soft);">Más al mediodía.</span></div>
+                        <div><i class="fas fa-cloud mr-1" style="color:#8B93A0;"></i><strong>Nubosidad</strong><br><span style="color:var(--ink-soft);">Las nubes reducen la radiación.</span></div>
+                        <div><i class="fas fa-tree mr-1" style="color:var(--leaf);"></i><strong>Sombras</strong><br><span style="color:var(--ink-soft);">Árboles o edificios la bajan.</span></div>
+                        <div><i class="fas fa-location-arrow mr-1" style="color:var(--clay);"></i><strong>Orientación</strong><br><span style="color:var(--ink-soft);">Debe mirar hacia el sol.</span></div>
+                        <div><i class="fas fa-ruler-combined mr-1" style="color:#7C5CBF;"></i><strong>Inclinación</strong><br><span style="color:var(--ink-soft);">El ángulo influye en lo que recibe.</span></div>
+                        <div class="col-span-2 sm:col-span-1"><i class="fas fa-broom mr-1" style="color:#8B5E3C;"></i><strong>Suciedad</strong><br><span style="color:var(--ink-soft);">Polvo u hojas la reducen mucho.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 rounded-xl" style="background:#FBF5E9; border:1px solid #EFDDBB;">
+                <p class="font-bold mb-2 text-sm" style="color:var(--sky);"><i class="fas fa-bolt mr-2" style="color:var(--sun);"></i>Mini reto: un panel de 400 W, ¿producirá 400 W todo el día?</p>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="answerMini(this, false)" class="btn btn-outline">Sí, siempre</button>
+                    <button onclick="answerMini(this, true)" class="btn btn-outline">No, varía</button>
+                </div>
+                <p class="mini-feedback mt-2 text-sm font-bold" aria-live="polite"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Componentes -->
+    <div id="slide-3" class="slide w-full max-w-5xl" data-label="Actividad 2">
+        <div class="page p-4 sm:p-6">
+            <span class="eyebrow">Actividad 2</span>
+            <h2 class="font-display font-semibold text-xl sm:text-2xl mt-2 mb-2" style="color:var(--sky);">Construyamos el sistema</h2>
+            <p class="text-sm sm:text-base mb-4" style="color:var(--ink-soft);">Toca cada componente para descubrir su función en el recorrido de la energía.</p>
+
+            <div class="flex flex-wrap md:flex-nowrap gap-2 items-center justify-center">
+                <button type="button" class="text-center cursor-pointer card-hover" onclick="toggleReveal('desc-panel', this)">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-1 border-4" style="background:#EAF1F8; border-color:#CBDEEE;">
+                        <i class="fas fa-solar-panel text-xl sm:text-2xl" style="color:var(--panel-blue);"></i>
+                    </div>
+                    <h3 class="font-bold text-xs sm:text-sm">1. Panel</h3>
+                </button>
+                <i class="fas fa-link text-lg rotate-90 md:rotate-0" style="color:#D8CDAE;"></i>
+                <button type="button" class="text-center cursor-pointer card-hover" onclick="toggleReveal('desc-cable', this)">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-1 border-4" style="background:#F2EFE7; border-color:#DCD5C0;">
+                        <i class="fas fa-random text-xl sm:text-2xl" style="color:#6B6555;"></i>
+                    </div>
+                    <h3 class="font-bold text-xs sm:text-sm">2. Cables</h3>
+                </button>
+                <i class="fas fa-link text-lg rotate-90 md:rotate-0" style="color:#D8CDAE;"></i>
+                <button type="button" class="text-center cursor-pointer card-hover" onclick="toggleReveal('desc-breaker', this)">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-1 border-4" style="background:#FBE9E4; border-color:#F0C7BA;">
+                        <i class="fas fa-toggle-on text-xl sm:text-2xl" style="color:var(--clay);"></i>
+                    </div>
+                    <h3 class="font-bold text-xs sm:text-sm">3. Breaker</h3>
+                </button>
+                <i class="fas fa-link text-lg rotate-90 md:rotate-0" style="color:#D8CDAE;"></i>
+                <button type="button" class="text-center cursor-pointer card-hover" onclick="toggleReveal('desc-eco', this)">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-1 border-4" style="background:#E3EFE7; border-color:#BFDCC9;">
+                        <i class="fas fa-car-battery text-xl sm:text-2xl" style="color:var(--leaf);"></i>
+                    </div>
+                    <h3 class="font-bold text-xs sm:text-sm">4. EcoFlow</h3>
+                </button>
+                <i class="fas fa-link text-lg rotate-90 md:rotate-0" style="color:#D8CDAE;"></i>
+                <button type="button" class="text-center cursor-pointer card-hover" onclick="toggleReveal('desc-carga', this)">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-1 border-4" style="background:#FDECD3; border-color:#F2D2A0;">
+                        <i class="fas fa-lightbulb text-xl sm:text-2xl" style="color:var(--ember);"></i>
+                    </div>
+                    <h3 class="font-bold text-xs sm:text-sm">5. Equipos</h3>
+                </button>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                <div id="desc-panel" class="reveal-content p-3 rounded-lg text-sm" style="background:#EAF1F8;"><strong style="color:var(--panel-blue);">Panel solar:</strong> convierte la radiación del sol en electricidad.</div>
+                <div id="desc-cable" class="reveal-content p-3 rounded-lg text-sm" style="background:#F2EFE7;"><strong style="color:#6B6555;">Cables:</strong> transportan la energía entre los componentes.</div>
+                <div id="desc-breaker" class="reveal-content p-3 rounded-lg text-sm" style="background:#FBE9E4;"><strong style="color:var(--clay);">Breaker:</strong> protege el circuito y permite desconectarlo por seguridad.</div>
+                <div id="desc-eco" class="reveal-content p-3 rounded-lg text-sm" style="background:#E3EFE7;"><strong style="color:var(--leaf-deep);">EcoFlow:</strong> recibe, almacena y entrega la energía de forma segura.</div>
+                <div id="desc-carga" class="reveal-content p-3 rounded-lg md:col-span-2 text-center text-sm" style="background:#FDECD3;"><strong style="color:var(--ember);">Equipos (carga):</strong> tus electrodomésticos, los que finalmente consumen la electricidad.</div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <button onclick="toggleReveal('reveal-quitar', this)" class="btn btn-outline">
+                    ¿Qué pasa si eliminamos uno de estos componentes?
+                </button>
+                <div id="reveal-quitar" class="reveal-content mt-3 p-3 rounded-lg text-left text-sm" style="background:#FBF5E9; border:1px solid #EFDDBB; color:var(--ink-soft);">
+                    Cada pieza cumple una función distinta: sin panel no hay generación, sin cables no hay transporte, sin breaker no hay protección, sin EcoFlow no hay almacenamiento ni suministro estable. El sistema funciona como un conjunto, no como piezas sueltas.
+                </div>
+            </div>
+
+            <div class="mt-3 text-center">
+                <button onclick="toggleReveal('reveal-dentro', this)" class="btn btn-outline">
+                    ¿Qué hay dentro de la EcoFlow?
+                </button>
+                <div id="reveal-dentro" class="reveal-content mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-left text-sm">
+                    <div class="p-3 rounded-lg" style="background:#EAF1F8;"><i class="fas fa-microchip mb-1 block" style="color:var(--panel-blue);"></i><strong style="color:var(--panel-blue);">Controlador de carga:</strong> regula lo que entra desde el panel y protege la batería de sobrecargas.</div>
+                    <div class="p-3 rounded-lg" style="background:#E3EFE7;"><i class="fas fa-car-battery mb-1 block" style="color:var(--leaf);"></i><strong style="color:var(--leaf-deep);">Batería:</strong> almacena la energía para usarla cuando no hay sol.</div>
+                    <div class="p-3 rounded-lg" style="background:#FDECD3;"><i class="fas fa-bolt mb-1 block" style="color:var(--ember);"></i><strong style="color:var(--ember);">Inversor:</strong> convierte la corriente (DC) en corriente normal (AC) para que funcionen los equipos.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: Instalación -->
+    <div id="slide-4" class="slide w-full max-w-5xl" data-label="Actividad 3">
+        <div class="page p-4 sm:p-6">
+            <span class="eyebrow">Actividad 3</span>
+            <h2 class="font-display font-semibold text-xl sm:text-2xl mt-2 mb-2" style="color:var(--sky);">¿Dónde instalar el panel?</h2>
+            <p class="text-sm sm:text-base mb-3" style="color:var(--ink-soft);">Miren cada situación. ¿Lo instalarían ahí? Toquen para revisar.</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+                <button type="button" class="install-card border border-[#E8DFC9] p-3 rounded-xl text-center card-hover" data-ok="true" onclick="markInstall(this)">
+                    <i class="fas fa-home text-2xl sm:text-3xl mb-1" style="color:#9AA3AF;"></i>
+                    <p class="font-bold text-xs sm:text-sm">Techo despejado</p>
+                    <p class="install-result text-xs mt-1 font-bold hidden"></p>
+                </button>
+                <button type="button" class="install-card border border-[#E8DFC9] p-3 rounded-xl text-center card-hover" data-ok="false" onclick="markInstall(this)">
+                    <i class="fas fa-tree text-2xl sm:text-3xl mb-1" style="color:#9AA3AF;"></i>
+                    <p class="font-bold text-xs sm:text-sm">Debajo de un árbol</p>
+                    <p class="install-result text-xs mt-1 font-bold hidden"></p>
+                </button>
+                <button type="button" class="install-card border border-[#E8DFC9] p-3 rounded-xl text-center card-hover" data-ok="false" onclick="markInstall(this)">
+                    <i class="fas fa-water text-2xl sm:text-3xl mb-1" style="color:#9AA3AF;"></i>
+                    <p class="font-bold text-xs sm:text-sm">Superficie que empoza agua</p>
+                    <p class="install-result text-xs mt-1 font-bold hidden"></p>
+                </button>
+                <button type="button" class="install-card border border-[#E8DFC9] p-3 rounded-xl text-center card-hover" data-ok="true" onclick="markInstall(this)">
+                    <i class="fas fa-layer-group text-2xl sm:text-3xl mb-1" style="color:#9AA3AF;"></i>
+                    <p class="font-bold text-xs sm:text-sm">Piso despejado y firme</p>
+                    <p class="install-result text-xs mt-1 font-bold hidden"></p>
+                </button>
+                <button type="button" class="install-card border border-[#E8DFC9] p-3 rounded-xl text-center card-hover" data-ok="false" onclick="markInstall(this)">
+                    <i class="fas fa-satellite-dish text-2xl sm:text-3xl mb-1" style="color:#9AA3AF;"></i>
+                    <p class="font-bold text-xs sm:text-sm">Techo con antenas o postes</p>
+                    <p class="install-result text-xs mt-1 font-bold hidden"></p>
+                </button>
+                <div class="p-3 rounded-xl text-center flex flex-col justify-center" style="background:#FBF5E9;">
+                    <h4 class="font-bold text-sm" style="color:var(--sky);">Regla de oro</h4>
+                    <p class="text-xs mt-1" style="color:var(--ink-soft);">Máxima radiación solar, cero sombras y superficie segura.</p>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <button onclick="toggleReveal('reveal-reto3', this)" class="btn btn-outline">
+                    Reto: techo con sombra parte del día
+                </button>
+                <div id="reveal-reto3" class="reveal-content mt-3 p-3 rounded-lg text-left text-sm" style="background:#FBF5E9; border:1px solid #EFDDBB; color:var(--ink-soft);">
+                    <p class="font-semibold mb-1" style="color:var(--sky);">Un techo tiene una parte sombreada en la mañana y otra en la tarde. ¿Dónde colocarían el panel y qué verificarían antes de instalar?</p>
+                    Discutan en grupo cuál franja del día concentra más horas de sol directo en su zona, y revisen que la superficie elegida sea firme, segura y tenga espacio para el mantenimiento.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Implementación · Casa -->
+    <div id="slide-5" class="slide w-full max-w-5xl" data-label="Actividad 4 · Casa">
+        <div class="page p-4 sm:p-6">
+            <span class="eyebrow">Actividad 4 · 1 de 2</span>
+            <h2 class="font-display font-semibold text-xl sm:text-2xl mt-2 mb-1" style="color:var(--sky);"><i class="fas fa-house mr-2" style="color:var(--panel-blue);"></i>Escenario 1 · Una casa</h2>
+            <p class="text-sm sm:text-base mb-2" style="color:var(--ink-soft);">El panel está generando 300 W. Toquen los equipos que la familia quiere usar al tiempo.</p>
+
+            <div class="text-center mb-3">
+                <button onclick="toggleReveal('reveal-watts', this)" class="btn btn-outline">
+                    ¿Qué son los watts (W)?
+                </button>
+                <div id="reveal-watts" class="reveal-content mt-2 p-3 rounded-lg text-left text-sm" style="background:#FBF5E9; border:1px solid #EFDDBB; color:var(--ink-soft);">
+                    Los watts son como el flujo de agua que sale de una llave: indican qué tan rápido se usa o se entrega la energía. Por ejemplo, una EcoFlow DELTA 2 puede entregar hasta <strong>1.800 W</strong> a la vez y almacena <strong>1.024 Wh (1 kWh)</strong> de energía.
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3" id="equipos-casa">
+                <button type="button" class="equipo-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" data-watts="10" onclick="toggleEquipo(this)">
+                    <i class="fas fa-lightbulb text-lg sm:text-xl mb-1 block" style="color:var(--sun);"></i>
+                    <span class="font-bold text-xs block">Bombillo LED</span>
+                    <span class="text-xs" style="color:var(--ink-soft);">10 W</span>
+                </button>
+                <button type="button" class="equipo-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" data-watts="15" onclick="toggleEquipo(this)">
+                    <i class="fas fa-charging-station text-lg sm:text-xl mb-1 block" style="color:var(--panel-blue);"></i>
+                    <span class="font-bold text-xs block">Cargador celular</span>
+                    <span class="text-xs" style="color:var(--ink-soft);">15 W</span>
+                </button>
+                <button type="button" class="equipo-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" data-watts="60" onclick="toggleEquipo(this)">
+                    <i class="fas fa-wifi text-lg sm:text-xl mb-1 block" style="color:var(--panel-blue);"></i>
+                    <span class="font-bold text-xs block">Router (Starlink)</span>
+                    <span class="text-xs" style="color:var(--ink-soft);">60 W</span>
+                </button>
+                <button type="button" class="equipo-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" data-watts="50" onclick="toggleEquipo(this)">
+                    <i class="fas fa-laptop text-lg sm:text-xl mb-1 block" style="color:var(--panel-blue);"></i>
+                    <span class="font-bold text-xs block">Portátil</span>
+                    <span class="text-xs" style="color:var(--ink-soft);">50 W</span>
+                </button>
+                <button type="button" class="equipo-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" data-watts="100" onclick="toggleEquipo(this)">
+                    <i class="fas fa-tv text-lg sm:text-xl mb-1 block" style="color:var(--panel-blue);"></i>
+                    <span class="font-bold text-xs block">Televisor</span>
+                    <span class="text-xs" style="color:var(--ink-soft);">100 W</span>
+                </button>
+                <button type="button" class="equipo-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" data-watts="100" onclick="toggleEquipo(this)">
+                    <i class="fas fa-snowflake text-lg sm:text-xl mb-1 block" style="color:var(--panel-blue);"></i>
+                    <span class="font-bold text-xs block">Nevera pequeña</span>
+                    <span class="text-xs" style="color:var(--ink-soft);">~100 W</span>
+                </button>
+                <button type="button" class="equipo-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" data-watts="1200" onclick="toggleEquipo(this)">
+                    <i class="fas fa-mug-hot text-lg sm:text-xl mb-1 block" style="color:var(--clay);"></i>
+                    <span class="font-bold text-xs block">Cafetera</span>
+                    <span class="text-xs" style="color:var(--ink-soft);">1.200 W</span>
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 items-center p-3 rounded-xl mb-2" style="background:#FBF5E9;">
+                <div class="flex-1 text-center">
+                    <span class="text-xs uppercase font-bold" style="color:var(--ink-soft);">Generación</span>
+                    <p class="text-xl font-bold" style="color:var(--leaf);">300 W</p>
+                </div>
+                <div class="text-xl font-bold" style="color:#C9BC96;">VS</div>
+                <div class="flex-1 text-center">
+                    <span class="text-xs uppercase font-bold" style="color:var(--ink-soft);">Consumo actual</span>
+                    <p class="text-xl font-bold" id="consumo-total" style="color:var(--clay);">0 W</p>
+                </div>
+            </div>
+            <p id="balance-msg" class="text-center font-bold text-sm" style="color:var(--leaf-deep);" aria-live="polite">Aún no hay consumo: toda la energía carga la batería.</p>
+        </div>
+    </div>
+
+    <!-- Slide 6: Implementación · Comunidad -->
+    <div id="slide-6" class="slide w-full max-w-5xl" data-label="Actividad 4 · Comunidad">
+        <div class="page p-4 sm:p-6">
+            <span class="eyebrow">Actividad 4 · 2 de 2</span>
+            <h2 class="font-display font-semibold text-xl sm:text-2xl mt-2 mb-1" style="color:var(--sky);"><i class="fas fa-people-group mr-2" style="color:var(--panel-blue);"></i>Escenario 2 · La comunidad</h2>
+            <p class="text-sm sm:text-base mb-3" style="color:var(--ink-soft);">La energía es limitada y se reparte entre todos. Toquen cada equipo para ver su prioridad.</p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                <button type="button" class="prioridad-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" onclick="revealPriority(this,'alta','Comunicación es prioridad en emergencias.')">
+                    <i class="fas fa-wifi text-lg mb-1 block" style="color:#9AA3AF;"></i>
+                    <span class="font-bold text-xs block">Conectividad</span>
+                    <span class="prioridad-label text-xs font-bold hidden"></span>
+                </button>
+                <button type="button" class="prioridad-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" onclick="revealPriority(this,'alta','Seguridad y movilidad nocturna.')">
+                    <i class="fas fa-lightbulb text-lg mb-1 block" style="color:#9AA3AF;"></i>
+                    <span class="font-bold text-xs block">Iluminación esencial</span>
+                    <span class="prioridad-label text-xs font-bold hidden"></span>
+                </button>
+                <button type="button" class="prioridad-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" onclick="revealPriority(this,'alta','Sostienen educación y trabajo.')">
+                    <i class="fas fa-laptop text-lg mb-1 block" style="color:#9AA3AF;"></i>
+                    <span class="font-bold text-xs block">Computadores</span>
+                    <span class="prioridad-label text-xs font-bold hidden"></span>
+                </button>
+                <button type="button" class="prioridad-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" onclick="revealPriority(this,'media','Uso puntual, no todo el día.')">
+                    <i class="fas fa-tv text-lg mb-1 block" style="color:#9AA3AF;"></i>
+                    <span class="font-bold text-xs block">Televisor</span>
+                    <span class="prioridad-label text-xs font-bold hidden"></span>
+                </button>
+                <button type="button" class="prioridad-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" onclick="revealPriority(this,'media','Uso puntual en eventos.')">
+                    <i class="fas fa-volume-high text-lg mb-1 block" style="color:#9AA3AF;"></i>
+                    <span class="font-bold text-xs block">Equipo de sonido</span>
+                    <span class="prioridad-label text-xs font-bold hidden"></span>
+                </button>
+                <button type="button" class="prioridad-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" onclick="revealPriority(this,'baja','Pueden agotar la batería rápido.')">
+                    <i class="fas fa-mug-hot text-lg mb-1 block" style="color:#9AA3AF;"></i>
+                    <span class="font-bold text-xs block">Alto consumo</span>
+                    <span class="prioridad-label text-xs font-bold hidden"></span>
+                </button>
+                <button type="button" class="prioridad-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" onclick="revealPriority(this,'baja','Consumen mucho para poco beneficio.')">
+                    <i class="fas fa-fire text-lg mb-1 block" style="color:#9AA3AF;"></i>
+                    <span class="font-bold text-xs block">Generan calor</span>
+                    <span class="prioridad-label text-xs font-bold hidden"></span>
+                </button>
+                <button type="button" class="prioridad-btn card-hover border border-[#E8DFC9] p-2.5 rounded-xl text-center" onclick="revealPriority(this,'baja','Pueden esperar a que haya energía disponible.')">
+                    <i class="fas fa-ellipsis text-lg mb-1 block" style="color:#9AA3AF;"></i>
+                    <span class="font-bold text-xs block">No esenciales</span>
+                    <span class="prioridad-label text-xs font-bold hidden"></span>
+                </button>
+            </div>
+
+            <div class="text-center mb-3">
+                <button onclick="toggleReveal('reveal-durabilidad', this)" class="btn btn-outline">
+                    ¿De qué depende que la batería dure más?
+                </button>
+                <div id="reveal-durabilidad" class="reveal-content mt-3 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-left text-xs" style="color:var(--ink-soft);">
+                    <div class="p-2 rounded-lg" style="background:#FBF5E9;"><strong style="color:var(--sky);">1. Capacidad de almacenamiento</strong> — cuánta energía puede guardar la EcoFlow.</div>
+                    <div class="p-2 rounded-lg" style="background:#FBF5E9;"><strong style="color:var(--sky);">2. Cantidad de equipos conectados</strong> — más equipos, más consumo total.</div>
+                    <div class="p-2 rounded-lg" style="background:#FBF5E9;"><strong style="color:var(--sky);">3. Potencia de cada equipo</strong> — a mayor potencia (W), más rápido se gasta.</div>
+                    <div class="p-2 rounded-lg" style="background:#FBF5E9;"><strong style="color:var(--sky);">4. Tiempo de funcionamiento</strong> — más horas encendido, más consumo.</div>
+                    <div class="p-2 rounded-lg" style="background:#FBF5E9;"><strong style="color:var(--sky);">5. Energía que produce el panel</strong> — más generación, más autonomía.</div>
+                    <div class="p-2 rounded-lg" style="background:#FBF5E9;"><strong style="color:var(--sky);">6. Condiciones solares</strong> — clima, hora del día y sombras.</div>
+                    <div class="p-2 rounded-lg sm:col-span-2" style="background:#FBF5E9;"><strong style="color:var(--sky);">7. Estado de carga de la batería</strong> — si ya estaba parcialmente descargada, dura menos.</div>
+                </div>
+            </div>
+
+            <div class="p-3 rounded-xl" style="background:#FBF5E9; border:1px solid #EFDDBB;">
+                <p class="font-bold mb-2 text-sm" style="color:var(--sky);"><i class="fas fa-flag-checkered mr-2" style="color:var(--ember);"></i>Reto: una EcoFlow alimenta solo un router y dos bombillos. Después se agregan un portátil, un televisor y una cafetera. ¿Cuál escenario hace que la batería dure más?</p>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="answerDuracion(true, this)" class="btn btn-outline">Router + 2 bombillos</button>
+                    <button onclick="answerDuracion(false, this)" class="btn btn-outline">+ Portátil, TV y cafetera</button>
+                </div>
+                <p class="duracion-feedback mt-2 text-sm font-bold" aria-live="polite"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7: Mantenimiento -->
+    <div id="slide-7" class="slide w-full max-w-5xl" data-label="Actividad 5">
+        <div class="page p-4 sm:p-6">
+            <span class="eyebrow">Actividad 5</span>
+            <h2 class="font-display font-semibold text-xl sm:text-2xl mt-2 mb-2" style="color:var(--sky);">Mantenimiento y vida útil</h2>
+            <p class="text-sm sm:text-base mb-3" style="color:var(--ink-soft);">Un sistema solar necesita cuidado. ¿Qué hay que revisar o limpiar del panel?</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-3 text-center">
+                <button type="button" class="p-3 rounded-xl border border-transparent card-hover" style="background:#F3F0E7;" onclick="toggleCheck(this)">
+                    <i class="fas fa-smog text-xl sm:text-2xl mb-1" style="color:#8B93A0;"></i>
+                    <p class="font-bold text-xs sm:text-sm">Polvo</p>
+                    <i class="fas fa-check-circle hidden mt-1 text-lg" style="color:var(--leaf);"></i>
+                </button>
+                <button type="button" class="p-3 rounded-xl border border-transparent card-hover" style="background:#F3F0E7;" onclick="toggleCheck(this)">
+                    <i class="fas fa-leaf text-xl sm:text-2xl mb-1" style="color:var(--leaf);"></i>
+                    <p class="font-bold text-xs sm:text-sm">Hojas secas</p>
+                    <i class="fas fa-check-circle hidden mt-1 text-lg" style="color:var(--leaf);"></i>
+                </button>
+                <button type="button" class="p-3 rounded-xl border border-transparent card-hover" style="background:#F3F0E7;" onclick="toggleCheck(this)">
+                    <i class="fas fa-crow text-xl sm:text-2xl mb-1" style="color:#4B4B4B;"></i>
+                    <p class="font-bold text-xs sm:text-sm">Excremento de aves</p>
+                    <i class="fas fa-check-circle hidden mt-1 text-lg" style="color:var(--leaf);"></i>
+                </button>
+                <button type="button" class="p-3 rounded-xl border border-transparent card-hover" style="background:#F3F0E7;" onclick="toggleCheck(this)">
+                    <i class="fas fa-search text-xl sm:text-2xl mb-1" style="color:var(--panel-blue);"></i>
+                    <p class="font-bold text-xs sm:text-sm">Cables pelados</p>
+                    <i class="fas fa-check-circle hidden mt-1 text-lg" style="color:var(--leaf);"></i>
+                </button>
+            </div>
+
+            <div class="p-3 rounded-r-lg border-l-4 mb-3" style="background:#EAF1F8; border-color:var(--panel-blue);">
+                <h4 class="font-bold mb-0.5 text-sm" style="color:var(--panel-blue);"><i class="fas fa-info-circle mr-2"></i>Sobre la batería EcoFlow</h4>
+                <p class="text-sm" style="color:#2A4A63;">No dura para siempre. Su vida útil depende del calor, de cuántas veces se carga y descarga (ciclos), y de no dejarla llegar a 0 % con frecuencia.</p>
+            </div>
+
+            <div class="text-center">
+                <button onclick="toggleReveal('reveal-polvo', this)" class="btn btn-outline">
+                    ¿Qué pasa si dejamos el panel cubierto de polvo por meses?
+                </button>
+                <div id="reveal-polvo" class="reveal-content mt-3 p-3 rounded-lg text-left text-sm" style="background:#FBF5E9; border:1px solid #EFDDBB; color:var(--ink-soft);">
+                    Llega menos luz a las células, así que la generación baja de forma constante, no solo un día puntual. Con el tiempo, la suciedad acumulada también puede dejar marcas o dañar la superficie del panel.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8: Minijuego de riesgos -->
+    <div id="slide-8" class="slide w-full max-w-5xl" data-label="Actividad 6 · Riesgos">
+        <div class="page p-4 sm:p-6">
+            <span class="eyebrow">Actividad 6 · 1 de 2 · minijuego</span>
+            <h2 class="font-display font-semibold text-xl sm:text-2xl mt-2 mb-2" style="color:var(--sky);">¿Peligro o seguro?</h2>
+            <p class="text-sm sm:text-base mb-3" style="color:var(--ink-soft);">Lean la situación y decidan. Pongan a prueba su sentido común.</p>
+
+            <div class="mb-2 p-2.5 rounded-lg border border-[#E8DFC9]" style="background:#FBF5E9;">
+                <p class="text-sm sm:text-base font-semibold mb-2">1. Manipular conexiones eléctricas con las manos mojadas.</p>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="answerRiesgo(this, true)" class="btn btn-danger">Peligro</button>
+                    <button onclick="answerRiesgo(this, false)" class="btn btn-safe">Seguro</button>
+                </div>
+                <div class="riesgo-feedback mt-2 text-sm font-bold" aria-live="polite"></div>
+            </div>
+
+            <div class="mb-2 p-2.5 rounded-lg border border-[#E8DFC9]" style="background:#FBF5E9;">
+                <p class="text-sm sm:text-base font-semibold mb-2">2. Instalar un panel en un techo sin medidas de protección contra caídas.</p>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="answerRiesgo(this, true)" class="btn btn-danger">Peligro</button>
+                    <button onclick="answerRiesgo(this, false)" class="btn btn-safe">Seguro</button>
+                </div>
+                <div class="riesgo-feedback mt-2 text-sm font-bold" aria-live="polite"></div>
+            </div>
+
+            <div class="mb-2 p-2.5 rounded-lg border border-[#E8DFC9]" style="background:#FBF5E9;">
+                <p class="text-sm sm:text-base font-semibold mb-2">3. Revisar visualmente los cables antes de usar el sistema.</p>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="answerRiesgo(this, false)" class="btn btn-danger">Peligro</button>
+                    <button onclick="answerRiesgo(this, true)" class="btn btn-safe">Seguro</button>
+                </div>
+                <div class="riesgo-feedback mt-2 text-sm font-bold" aria-live="polite"></div>
+            </div>
+
+            <div class="mb-2 p-2.5 rounded-lg border border-[#E8DFC9]" style="background:#FBF5E9;">
+                <p class="text-sm sm:text-base font-semibold mb-2">4. Sobrecargar una salida conectando demasiados equipos.</p>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="answerRiesgo(this, true)" class="btn btn-danger">Peligro</button>
+                    <button onclick="answerRiesgo(this, false)" class="btn btn-safe">Seguro</button>
+                </div>
+                <div class="riesgo-feedback mt-2 text-sm font-bold" aria-live="polite"></div>
+            </div>
+
+            <div class="mb-2 p-2.5 rounded-lg border border-[#E8DFC9]" style="background:#FBF5E9;">
+                <p class="text-sm sm:text-base font-semibold mb-2">5. Colocar la EcoFlow en un lugar ventilado, según las instrucciones del fabricante.</p>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="answerRiesgo(this, false)" class="btn btn-danger">Peligro</button>
+                    <button onclick="answerRiesgo(this, true)" class="btn btn-safe">Seguro</button>
+                </div>
+                <div class="riesgo-feedback mt-2 text-sm font-bold" aria-live="polite"></div>
+            </div>
+
+            <div class="p-2.5 rounded-lg border border-[#E8DFC9]" style="background:#FBF5E9;">
+                <p class="text-sm sm:text-base font-semibold mb-2">6. Hacer conexiones improvisadas porque "los cables se ven iguales".</p>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="answerRiesgo(this, true)" class="btn btn-danger">Peligro</button>
+                    <button onclick="answerRiesgo(this, false)" class="btn btn-safe">Seguro</button>
+                </div>
+                <div class="riesgo-feedback mt-2 text-sm font-bold" aria-live="polite"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 9: Tipos de riesgo -->
+    <div id="slide-9" class="slide w-full max-w-5xl" data-label="Actividad 6 · Tipos">
+        <div class="page p-4 sm:p-6">
+            <span class="eyebrow">Actividad 6 · 2 de 2</span>
+            <h2 class="font-display font-semibold text-xl sm:text-2xl mt-2 mb-2" style="color:var(--sky);">Para cerrar: tipos de riesgo</h2>
+            <p class="text-sm sm:text-base mb-4" style="color:var(--ink-soft);">Cada situación anterior corresponde a uno de estos tipos.</p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                <div class="p-3 rounded-lg" style="background:#FBE9E4;"><i class="fas fa-bolt mr-1" style="color:var(--clay);"></i><strong>Eléctrico</strong><br><span style="color:var(--ink-soft);">Descarga, cortocircuito</span></div>
+                <div class="p-3 rounded-lg" style="background:#FDECD3;"><i class="fas fa-fire mr-1" style="color:var(--ember);"></i><strong>Incendio</strong><br><span style="color:var(--ink-soft);">Sobrecarga, malas conexiones</span></div>
+                <div class="p-3 rounded-lg" style="background:#EAF1F8;"><i class="fas fa-person-falling mr-1" style="color:var(--panel-blue);"></i><strong>Físico</strong><br><span style="color:var(--ink-soft);">Caída durante instalación</span></div>
+                <div class="p-3 rounded-lg" style="background:#E3EFE7;"><i class="fas fa-cloud-rain mr-1" style="color:var(--leaf);"></i><strong>Ambiental</strong><br><span style="color:var(--ink-soft);">Agua, lluvia, humedad</span></div>
+                <div class="p-3 rounded-lg" style="background:#F3F0E7;"><i class="fas fa-car-battery mr-1" style="color:#6B6555;"></i><strong>Energía almacenada</strong><br><span style="color:var(--ink-soft);">Baterías energizadas</span></div>
+                <div class="p-3 rounded-lg" style="background:#F3F0E7;"><i class="fas fa-screwdriver-wrench mr-1" style="color:#6B6555;"></i><strong>Mecánico</strong><br><span style="color:var(--ink-soft);">Herramientas, estructuras</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 10: Cierre -->
+    <div id="slide-10" class="slide w-full max-w-3xl text-center" data-label="Cierre">
+        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-3 flex items-center justify-center" style="background:radial-gradient(circle, #FDE9C6, #F4A93B);">
+            <i class="fas fa-trophy text-3xl sm:text-4xl" style="color:#B85A1E;"></i>
+        </div>
+        <h2 class="font-display font-semibold text-2xl sm:text-3xl mb-3" style="color:var(--sky);">Reto final</h2>
+        <div class="page p-3 sm:p-4 text-left mb-3">
+            <p class="text-sm sm:text-base" style="color:var(--ink-soft);">Una comunidad necesita energía para alimentar un router, iluminación y computadores. Tienen panel solar, EcoFlow, cables y protecciones.</p>
+            <p class="font-bold mt-2 text-sm sm:text-base" style="color:var(--sky);">¿Qué deben analizar antes de poner el sistema en funcionamiento?</p>
+        </div>
+
+        <div class="page p-4 inline-block text-left mb-4">
+            <h3 class="font-bold text-base mb-2 pb-1 border-b border-[#E8DFC9]" style="color:var(--sky);">Deben mencionar al menos</h3>
+            <ul class="space-y-1.5 text-sm" style="color:var(--ink-soft);">
+                <li><i class="fas fa-check mr-2" style="color:var(--leaf);"></i>Recurso solar</li>
+                <li><i class="fas fa-check mr-2" style="color:var(--leaf);"></i>Ubicación</li>
+                <li><i class="fas fa-check mr-2" style="color:var(--leaf);"></i>Componentes</li>
+                <li><i class="fas fa-check mr-2" style="color:var(--leaf);"></i>Protección</li>
+                <li><i class="fas fa-check mr-2" style="color:var(--leaf);"></i>Capacidad</li>
+                <li><i class="fas fa-check mr-2" style="color:var(--leaf);"></i>Mantenimiento</li>
+                <li><i class="fas fa-check mr-2" style="color:var(--leaf);"></i>Seguridad</li>
+            </ul>
+        </div>
+        <br>
+        <button onclick="goToSlide(0)" class="btn btn-ghost">
+            <i class="fas fa-rotate-left"></i> Volver al inicio
+        </button>
+    </div>
+
+</main>
+
+<!-- ===== Navegación inferior ===== -->
+<footer class="p-2 sm:p-3 flex justify-between items-center" style="background:#fff; border-top:1px solid #E8DFC9;">
+    <button id="btn-prev" onclick="prevSlide()" class="btn btn-outline" disabled>
+        <i class="fas fa-arrow-left"></i> Anterior
+    </button>
+    <button id="btn-next" onclick="nextSlide()" class="btn btn-dark">
+        Siguiente <i class="fas fa-arrow-right"></i>
+    </button>
+</footer>
+
+<script>
+    let currentSlide = 0;
+    const lastIndex = 10;
+    const totalSteps = lastIndex + 1;
+
+    const arcPath = document.getElementById('arc-fill');
+    const arcSun = document.getElementById('arc-sun');
+    const arcLength = arcPath.getTotalLength();
+    arcPath.style.strokeDasharray = arcLength;
+    document.getElementById('total-steps').textContent = totalSteps;
+
+    function updateSlides(){
+        document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+        const active = document.getElementById(`slide-${currentSlide}`);
+        active.classList.add('active');
+
+        const progress = currentSlide / lastIndex;
+        arcPath.style.strokeDashoffset = arcLength * (1 - progress);
+        const point = arcPath.getPointAtLength(arcLength * progress);
+        arcSun.setAttribute('cx', point.x);
+        arcSun.setAttribute('cy', point.y);
+
+        document.getElementById('current-step').textContent = currentSlide + 1;
+        document.getElementById('step-label').textContent = active.dataset.label || '';
+
+        document.getElementById('btn-prev').disabled = currentSlide === 0;
+        const nextBtn = document.getElementById('btn-next');
+        if (currentSlide === lastIndex){
+            nextBtn.style.visibility = 'hidden';
+        } else {
+            nextBtn.style.visibility = 'visible';
+        }
+    }
+
+    function goToSlide(i){
+        currentSlide = Math.max(0, Math.min(lastIndex, i));
+        updateSlides();
+    }
+    function nextSlide(){ if (currentSlide < lastIndex){ currentSlide++; updateSlides(); } }
+    function prevSlide(){ if (currentSlide > 0){ currentSlide--; updateSlides(); } }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') nextSlide();
+        if (e.key === 'ArrowLeft') prevSlide();
+    });
+
+    function toggleReveal(id, trigger){
+        const el = document.getElementById(id);
+        el.classList.toggle('show');
+        if (trigger && trigger.tagName === 'BUTTON' && trigger.querySelector('i')){
+            trigger.querySelector('i').classList.toggle('rotate-180');
+        }
+    }
+
+    function markInstall(card){
+        const ok = card.dataset.ok === 'true';
+        const label = card.querySelector('.install-result');
+        card.classList.remove('bg-green-50','bg-red-50');
+        if (ok){
+            card.style.background = '#E3EFE7';
+            card.style.borderColor = '#BFDCC9';
+            label.textContent = '¡Ideal!';
+            label.style.color = 'var(--leaf-deep)';
+        } else {
+            card.style.background = '#FBE3DD';
+            card.style.borderColor = '#F0C0B0';
+            label.textContent = 'Mejor buscar otro lugar';
+            label.style.color = 'var(--clay)';
+        }
+        label.classList.remove('hidden');
+    }
+
+    /* ---- Actividad 1: lista arrastrable ---- */
+    let dragEl = null, dragPointerId = null, dragStartY = 0;
+
+    function startDrag(e){
+        e.preventDefault();
+        dragEl = e.currentTarget.closest('.orden-item');
+        dragPointerId = e.pointerId;
+        dragEl.setPointerCapture(dragPointerId);
+        dragEl.classList.add('dragging');
+        dragStartY = e.clientY;
+        document.addEventListener('pointermove', onDragMove);
+        document.addEventListener('pointerup', endDrag);
+        document.addEventListener('pointercancel', endDrag);
+    }
+
+    function onDragMove(e){
+        if (!dragEl) return;
+        dragEl.style.transform = `translateY(${e.clientY - dragStartY}px)`;
+
+        const list = dragEl.parentElement;
+        const siblings = [...list.children].filter(el => el !== dragEl);
+        for (const sib of siblings){
+            const rect = sib.getBoundingClientRect();
+            const mid = rect.top + rect.height / 2;
+            const dragIsAfter = !!(sib.compareDocumentPosition(dragEl) & Node.DOCUMENT_POSITION_FOLLOWING);
+            if (e.clientY < mid && dragIsAfter){
+                const oldTop = dragEl.offsetTop;
+                list.insertBefore(dragEl, sib);
+                dragStartY += (dragEl.offsetTop - oldTop);
+                break;
+            }
+            if (e.clientY > mid && !dragIsAfter){
+                const oldTop = dragEl.offsetTop;
+                list.insertBefore(dragEl, sib.nextSibling);
+                dragStartY += (dragEl.offsetTop - oldTop);
+                break;
+            }
+        }
+    }
+
+    function endDrag(){
+        if (!dragEl) return;
+        dragEl.classList.remove('dragging');
+        dragEl.style.transform = '';
+        try{ dragEl.releasePointerCapture(dragPointerId); }catch(err){}
+        document.removeEventListener('pointermove', onDragMove);
+        document.removeEventListener('pointerup', endDrag);
+        document.removeEventListener('pointercancel', endDrag);
+        dragEl = null;
+        updateOrdenNumbers();
+        clearOrdenFeedback();
+    }
+
+    function moveItem(btn, dir){
+        const item = btn.closest('.orden-item');
+        const list = item.parentElement;
+        if (dir === -1 && item.previousElementSibling){
+            list.insertBefore(item, item.previousElementSibling);
+        } else if (dir === 1 && item.nextElementSibling){
+            list.insertBefore(item.nextElementSibling, item);
+        }
+        updateOrdenNumbers();
+        clearOrdenFeedback();
+    }
+
+    function updateOrdenNumbers(){
+        document.querySelectorAll('#orden-lista .orden-item').forEach((el, i) => {
+            el.querySelector('.orden-num').textContent = i + 1;
+        });
+    }
+
+    function clearOrdenFeedback(){
+        document.querySelectorAll('#orden-lista .orden-item').forEach(el => {
+            el.classList.remove('correct', 'incorrect');
+        });
+        document.getElementById('orden-feedback').classList.add('hidden');
+    }
+
+    function verificarOrden(){
+        const items = [...document.querySelectorAll('#orden-lista .orden-item')];
+        let aciertos = 0;
+        items.forEach((el, i) => {
+            const ok = Number(el.dataset.correct) === (i + 1);
+            el.classList.toggle('correct', ok);
+            el.classList.toggle('incorrect', !ok);
+            if (ok) aciertos++;
+        });
+        const fb = document.getElementById('orden-feedback');
+        fb.classList.remove('hidden');
+        if (aciertos === items.length){
+            fb.textContent = '✅ ¡Excelente! Ese es el orden correcto, de mayor a menor generación.';
+            fb.style.color = 'var(--leaf-deep)';
+        } else {
+            fb.textContent = `Van ${aciertos} de ${items.length} en el lugar correcto. Sigan intentando.`;
+            fb.style.color = 'var(--clay)';
+        }
+    }
+
+    function answerMini(btn, correct){
+        const box = btn.closest('div').nextElementSibling;
+        box.textContent = correct
+            ? '✅ No. Los 400 W son la potencia nominal bajo condiciones de prueba; la producción real cambia durante el día.'
+            : '❌ No es así. Esos 400 W son una potencia nominal, no una entrega constante.';
+        box.style.color = correct ? 'var(--leaf-deep)' : 'var(--clay)';
+    }
+
+    const GENERACION_CASA = 300;
+    function toggleEquipo(btn){
+        btn.classList.toggle('is-on');
+        if (btn.classList.contains('is-on')){
+            btn.style.background = '#FDECD3';
+            btn.style.borderColor = '#F2D2A0';
+        } else {
+            btn.style.background = '';
+            btn.style.borderColor = '';
+        }
+        calcularBalance();
+    }
+
+    function calcularBalance(){
+        let total = 0;
+        document.querySelectorAll('#equipos-casa .equipo-btn.is-on').forEach(b => total += Number(b.dataset.watts));
+        document.getElementById('consumo-total').textContent = total.toLocaleString('es-CO') + ' W';
+
+        const msg = document.getElementById('balance-msg');
+        if (total === 0){
+            msg.textContent = 'Aún no hay consumo: toda la energía carga la batería.';
+            msg.style.color = 'var(--leaf-deep)';
+        } else if (total < GENERACION_CASA){
+            msg.textContent = 'Generación > Consumo: la batería se está cargando.';
+            msg.style.color = 'var(--leaf-deep)';
+        } else if (total === GENERACION_CASA){
+            msg.textContent = 'Generación ≈ Consumo: el sistema se mantiene estable.';
+            msg.style.color = '#B85A1E';
+        } else {
+            msg.textContent = 'Consumo > Generación: la batería se está descargando.';
+            msg.style.color = 'var(--clay)';
+        }
+    }
+
+    const PRIORIDAD_STYLE = {
+        alta: { bg:'#E3EFE7', border:'#BFDCC9', color:'var(--leaf-deep)', label:'Prioridad alta' },
+        media:{ bg:'#FDECD3', border:'#F2D2A0', color:'#B85A1E', label:'Prioridad media' },
+        baja: { bg:'#F3F0E7', border:'#DCD5C0', color:'#6B6555', label:'Prioridad baja' },
+    };
+    function revealPriority(btn, tier, reason){
+        const s = PRIORIDAD_STYLE[tier];
+        btn.style.background = s.bg;
+        btn.style.borderColor = s.border;
+        const label = btn.querySelector('.prioridad-label');
+        label.textContent = s.label + ' — ' + reason;
+        label.style.color = s.color;
+        label.classList.remove('hidden');
+    }
+
+    function answerDuracion(correct, btn){
+        const box = btn.closest('div').nextElementSibling;
+        box.textContent = correct
+            ? '✅ Correcto. Router + 2 bombillos consumen unos 80 W en total, así que agotan la batería mucho más lento.'
+            : '❌ Ese combo consume cerca de 1.430 W, así que agota la batería mucho más rápido.';
+        box.style.color = correct ? 'var(--leaf-deep)' : 'var(--clay)';
+    }
+
+    function answerRiesgo(btn, isCorrect){
+        const box = btn.closest('div').nextElementSibling;
+        const wasDanger = btn.classList.contains('btn-danger');
+        if (isCorrect){
+            box.innerHTML = wasDanger
+                ? '<span style="color:var(--leaf-deep)"><i class="fas fa-check mr-1"></i>Correcto, es un peligro real.</span>'
+                : '<span style="color:var(--leaf-deep)"><i class="fas fa-check mr-1"></i>Correcto, es una práctica segura.</span>';
+        } else {
+            box.innerHTML = '<span style="color:var(--clay)"><i class="fas fa-xmark mr-1"></i>No es así, vuelvan a pensarlo.</span>';
+        }
+    }
+
+    function toggleCheck(card){
+        card.querySelector('.fa-check-circle').classList.toggle('hidden');
+    }
+
+    updateOrdenNumbers();
+    updateSlides();
+</script>
+</body>
+</html>
